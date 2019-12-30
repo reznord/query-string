@@ -1,7 +1,6 @@
 {
 	"name": "bms-query-string",
-	"version": "1.0.0",
-	"main": "dist/index.js",
+	"version": "6.9.0",
 	"description": "Parse and stringify URL query strings",
 	"license": "MIT",
 	"repository": "reznord/query-string",
