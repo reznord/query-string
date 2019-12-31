@@ -50,20 +50,6 @@ test('should sort parsed keys in given order', t => {
 	});
 });
 
-test('parse query string without a value', t => {
-	t.deepEqual(queryString.parse('foo'), {foo: null});
-	t.deepEqual(queryString.parse('foo&key'), {
-		foo: null,
-		key: null
-	});
-	t.deepEqual(queryString.parse('foo=bar&key'), {
-		foo: 'bar',
-		key: null
-	});
-	t.deepEqual(queryString.parse('a&a'), {a: [null, null]});
-	t.deepEqual(queryString.parse('a=&a'), {a: ['', null]});
-});
-
 test('return empty object if no qss can be found', t => {
 	t.deepEqual(queryString.parse('?'), {});
 	t.deepEqual(queryString.parse('&'), {});
@@ -143,24 +129,6 @@ test('query strings having comma separated arrays and format option as `comma`',
 	}), {foo: ['bar', 'baz']});
 });
 
-test('query strings having brackets arrays with null and format option as `bracket`', t => {
-	t.deepEqual(queryString.parse('bar[]&foo[]=a&foo[]&foo[]=', {
-		arrayFormat: 'bracket'
-	}), {
-		foo: ['a', null, ''],
-		bar: [null]
-	});
-});
-
-test('query strings having comma separated arrays with null and format option as `comma`', t => {
-	t.deepEqual(queryString.parse('bar&foo=a,', {
-		arrayFormat: 'comma'
-	}), {
-		foo: ['a', ''],
-		bar: null
-	});
-});
-
 test('query strings having indexed arrays and format option as `index`', t => {
 	t.deepEqual(queryString.parse('foo[0]=bar&foo[1]=baz', {
 		arrayFormat: 'index'
@@ -201,29 +169,6 @@ test('query strings having ordered index arrays and format option as `index`', t
 	}), {bat: 'buz', foo: ['zero', 'two', 'one', 'three']});
 });
 
-test('circuit parse -> stringify', t => {
-	const original = 'foo[3]=foo&foo[2]&foo[1]=one&foo[0]=&bat=buz';
-	const sortedOriginal = 'bat=buz&foo[0]=&foo[1]=one&foo[2]&foo[3]=foo';
-	const expected = {bat: 'buz', foo: ['', 'one', null, 'foo']};
-	const options = {
-		arrayFormat: 'index'
-	};
-
-	t.deepEqual(queryString.parse(original, options), expected);
-
-	t.is(queryString.stringify(expected, options), sortedOriginal);
-});
-
-test('circuit original -> parse - > stringify -> sorted original', t => {
-	const original = 'foo[21474836471]=foo&foo[21474836470]&foo[1]=one&foo[0]=&bat=buz';
-	const sortedOriginal = 'bat=buz&foo[0]=&foo[1]=one&foo[2]&foo[3]=foo';
-	const options = {
-		arrayFormat: 'index'
-	};
-
-	t.deepEqual(queryString.stringify(queryString.parse(original, options), options), sortedOriginal);
-});
-
 test('decode keys and values', t => {
 	t.deepEqual(queryString.parse('st%C3%A5le=foo'), {ståle: 'foo'});
 	t.deepEqual(queryString.parse('foo=%7B%ab%%7C%de%%7D+%%7Bst%C3%A5le%7D%'), {foo: '{%ab%|%de%} %{ståle}%'});
@@ -250,13 +195,6 @@ test('NaN value returns as string if option is set', t => {
 	t.deepEqual(queryString.parse('foo=   &bar=', {parseNumbers: true}), {foo: '   ', bar: ''});
 });
 
-test('parseNumbers works with arrayFormat', t => {
-	t.deepEqual(queryString.parse('foo[]=1&foo[]=2&foo[]=3&bar=1', {parseNumbers: true, arrayFormat: 'bracket'}), {foo: [1, 2, 3], bar: 1});
-	t.deepEqual(queryString.parse('foo=1,2,a', {parseNumbers: true, arrayFormat: 'comma'}), {foo: [1, 2, 'a']});
-	t.deepEqual(queryString.parse('foo[0]=1&foo[1]=2&foo[2]', {parseNumbers: true, arrayFormat: 'index'}), {foo: [1, 2, null]});
-	t.deepEqual(queryString.parse('foo=1&foo=2&foo=3', {parseNumbers: true}), {foo: [1, 2, 3]});
-});
-
 test('boolean value returns as string by default', t => {
 	t.deepEqual(queryString.parse('foo=true'), {foo: 'true'});
 });
@@ -264,13 +202,6 @@ test('boolean value returns as string by default', t => {
 test('boolean value returns as boolean if option is set', t => {
 	t.deepEqual(queryString.parse('foo=true', {parseBooleans: true}), {foo: true});
 	t.deepEqual(queryString.parse('foo=false&bar=true', {parseBooleans: true}), {foo: false, bar: true});
-});
-
-test('parseBooleans works with arrayFormat', t => {
-	t.deepEqual(queryString.parse('foo[]=true&foo[]=false&foo[]=true&bar=1', {parseBooleans: true, arrayFormat: 'bracket'}), {foo: [true, false, true], bar: '1'});
-	t.deepEqual(queryString.parse('foo=true,false,a', {parseBooleans: true, arrayFormat: 'comma'}), {foo: [true, false, 'a']});
-	t.deepEqual(queryString.parse('foo[0]=true&foo[1]=false&foo[2]', {parseBooleans: true, arrayFormat: 'index'}), {foo: [true, false, null]});
-	t.deepEqual(queryString.parse('foo=true&foo=false&foo=3', {parseBooleans: true}), {foo: [true, false, '3']});
 });
 
 test('boolean value returns as boolean and number value as number if both options are set', t => {
